@@ -1,0 +1,16 @@
+'use strict'
+
+var express = require('express');
+var ProjectController = require('../controller/project');
+
+var router = express.Router();
+
+router.get('/home', ProjectController.home);
+router.post('/test', ProjectController.test);
+router.post('/save-project', ProjectController.saveProject);
+router.get('/project/:id?', ProjectController.getProject);
+router.get('/projects', ProjectController.getAllProjects);
+router.put('/update-project/:id?', ProjectController.updateProject);
+router.delete('/delete-project/:id?', ProjectController.deleteProject);
+
+module.exports = router;
