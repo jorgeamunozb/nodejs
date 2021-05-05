@@ -1,6 +1,7 @@
 'use strict'
 
 var Project = require('../model/project');
+var fs = require('fs');
 
 var controller = {
     home: function (req, res) {
@@ -77,6 +78,34 @@ var controller = {
 
             return res.status(200).send({ project: projectDeleted });
         });
+    },
+
+    uploadImage: function (req, res) {
+        var projectId = req.params.id;
+
+        if (req.files) {
+            //File name
+            var filePath = req.files.image.path;
+            var fileSplit = filePath.split('\\');
+            var fileName = fileSplit[1];
+            //File extension
+            var extSplit = fileName.split('.');
+            var fileExt = extSplit[1];
+            var extAllowed = ['png', 'jpeg', 'jpg'];
+
+            if (extAllowed.includes(fileExt)) {
+                Project.findByIdAndUpdate(projectId, { image: fileName }, { new: true }, (err, projectUpdated) => {
+                    if (err) return res.status(500).send({ message: 'Error actualizando imagen.' });
+                    if (!projectUpdated) return res.status(404).send({ message: 'El proyecto para actualizar imagen no existe.' });
+
+                    return res.status(200).send({ project: projectUpdated });
+                });
+            } else {
+                fs.unlink(filePath, (err) => {
+                    return res.status(200).send({ message: 'Extensión [' + fileExt + '] no permitida.' });
+                });
+            }
+        }
     }
 };
 

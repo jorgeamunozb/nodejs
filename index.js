@@ -3,9 +3,10 @@
 var mongoose = require('mongoose');
 var app = require('./app');
 var port = 3701;
+var uri = 'mongodb://127.0.0.1:27017/LOCALDB';
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://127.0.0.1:27017/LOCALDB')
+mongoose.connect(uri, { useFindAndModify: false, useUnifiedTopology: true, useNewUrlParser: true })
     .then(() => {
         console.log("Conexión a LOCALDB exitosa!");
 
