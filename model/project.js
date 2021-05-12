@@ -3,7 +3,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var ProjectSchema = Schema({
+var projectSchema = Schema({
+    id: String,
     name: String,
     description: String,
     category: String,
@@ -12,4 +13,14 @@ var ProjectSchema = Schema({
     image: String
 });
 
-module.exports = mongoose.model('Project', ProjectSchema);
+projectSchema.methods.toJSON = function() {
+    var obj = this.toObject();
+
+    obj.id = obj._id;
+    delete obj._id;
+    delete obj.__v;
+
+    return obj;
+}
+
+module.exports = mongoose.model('Project', projectSchema);

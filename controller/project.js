@@ -2,21 +2,22 @@
 
 var Project = require('../model/project');
 var fs = require('fs');
+var path = require('path');
 
 var controller = {
-    home: function (req, res) {
+    home: function(req, res) {
         return res.status(200).send({
             message: 'Soy Home'
         });
     },
 
-    test: function (req, res) {
+    test: function(req, res) {
         return res.status(200).send({
             message: 'Soy Test'
         });
     },
 
-    saveProject: function (req, res) {
+    saveProject: function(req, res) {
         var project = new Project();
 
         var body = req.body;
@@ -37,7 +38,7 @@ var controller = {
 
     },
 
-    getProject: function (req, res) {
+    getProject: function(req, res) {
         var projectId = req.params.id;
 
         Project.findById(projectId, (err, project) => {
@@ -48,7 +49,7 @@ var controller = {
         });
     },
 
-    getAllProjects: function (req, res) {
+    getAllProjects: function(req, res) {
         Project.find().sort('+year').exec((err, projects) => {
             if (err) return res.status(500).send({ message: 'Error obteniendo datos.' });
             if (projects.length === 0) return res.status(404).send({ message: 'El proyecto no existe.' });
@@ -57,7 +58,7 @@ var controller = {
         });
     },
 
-    updateProject: function (req, res) {
+    updateProject: function(req, res) {
         var projectId = req.params.id;
         var update = req.body;
 
@@ -69,7 +70,7 @@ var controller = {
         });
     },
 
-    deleteProject: function (req, res) {
+    deleteProject: function(req, res) {
         var projectId = req.params.id;
 
         Project.findByIdAndDelete(projectId, (err, projectDeleted) => {
@@ -80,7 +81,7 @@ var controller = {
         });
     },
 
-    uploadImage: function (req, res) {
+    uploadImage: function(req, res) {
         var projectId = req.params.id;
 
         if (req.files) {
@@ -106,7 +107,59 @@ var controller = {
                 });
             }
         }
+    },
+
+    getImageFile: function(req, res) {
+        var file = req.params.image;
+        var pathFile = 'uploads/' + file;
+
+        fs.exists(pathFile, (exists) => {
+            if (exists) {
+                return res.sendFile(path.resolve(pathFile));
+            } else {
+                return res.status(200).send({ message: "No existe la imagen." });
+            }
+        });
+    },
+
+    createProjectWithImage: function(req, res) {
+        var project = new Project();
+        var body = req.body;
+
+        project.name = body.name;
+        project.description = body.description;
+        project.category = body.category;
+        project.year = body.year;
+        project.langs = body.langs;
+
+        if (req.files) {
+            //File name
+            var filePath = req.files.image.path;
+            var fileSplit = filePath.split('\\');
+            var fileName = fileSplit[1];
+            //File extension
+            var extSplit = fileName.split('.');
+            var fileExt = extSplit[1];
+            var extAllowed = ['png', 'jpeg', 'jpg'];
+
+            if (extAllowed.includes(fileExt)) {
+
+                project.image = fileName;
+
+                project.save((err, projectStored) => {
+                    if (err) return res.status(500).send({ message: 'Error interno guardando objeto en DB' });
+                    if (!projectStored) return res.status(404).send({ message: 'Error interno guardando objeto en DB' });
+
+                    return res.status(200).send({ project: projectStored });
+                });
+            } else {
+                fs.unlink(() => {
+                    return res.status(200).send({ message: 'Extensión [' + fileExt + '] no permitida.' });
+                });
+            }
+        }
     }
+
 };
 
 module.exports = controller;

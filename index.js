@@ -8,11 +8,10 @@ var uri = 'mongodb://127.0.0.1:27017/LOCALDB';
 mongoose.Promise = global.Promise;
 mongoose.connect(uri, { useFindAndModify: false, useUnifiedTopology: true, useNewUrlParser: true })
     .then(() => {
-        console.log("Conexión a LOCALDB exitosa!");
-
+        console.log(`Conexión a ${uri} exitosa!`);
         // Creación del servidor
         app.listen(port, () => {
-            console.log("Servidor corriendo correctamente en la URL 127.0.0.1:" + port);
+            console.log(`Servidor corriendo correctamente en la URL 127.0.0.1:${port}`);
         });
 
     })
