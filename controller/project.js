@@ -81,7 +81,7 @@ var controller = {
         });
     },
 
-    uploadImage: function(req, res) {
+    uploadImageWithProjectId: function(req, res) {
         var projectId = req.params.id;
 
         if (req.files) {
@@ -100,6 +100,34 @@ var controller = {
                     if (!projectUpdated) return res.status(404).send({ message: 'El proyecto para actualizar imagen no existe.' });
 
                     return res.status(200).send({ project: projectUpdated });
+                });
+            } else {
+                fs.unlink(filePath, (err) => {
+                    return res.status(200).send({ message: 'Extensión [' + fileExt + '] no permitida.' });
+                });
+            }
+        }
+    },
+
+    uploadImageWithoutProjectId: function(req, res) {
+        if (req.files) {
+            //File name
+            var filePath = req.files.image.path;
+            var fileSplit = filePath.split('\\');
+            var fileName = fileSplit[1];
+            //File extension
+            var extSplit = fileName.split('.');
+            var fileExt = extSplit[1];
+            var extAllowed = ['png', 'jpeg', 'jpg'];
+
+            if (extAllowed.includes(fileExt)) {
+                var project = new Project();
+                project.image = fileName;
+                project.save((err, projectStored) => {
+                    if (err) return res.status(500).send({ message: 'Error interno guardando objeto en DB' });
+                    if (!projectStored) return res.status(404).send({ message: 'Error interno guardando objeto en DB' });
+
+                    return res.status(200).send({ project: projectStored });
                 });
             } else {
                 fs.unlink(filePath, (err) => {
